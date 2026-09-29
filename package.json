@@ -30,7 +30,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node -e \"const fs=require('fs'); if(fs.existsSync('dist/index.d.ts')) { fs.copyFileSync('dist/index.d.ts', 'dist/index.d.mts'); fs.copyFileSync('dist/index.d.ts', 'dist/index.d.cts'); }\"",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

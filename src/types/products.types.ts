@@ -61,14 +61,12 @@ export interface InventoryHealthResponse {
 }
 
 export interface ABCItem {
-  product_id?: string | null;
   sku: string;
   product_name: string;
-  units_sold: number;
+  product_id?: string | null;
   revenue: string;
-  stock_quantity?: number | null;
-  revenue_share_pct: number;
-  cumulative_revenue_pct: number;
+  revenue_share: number;
+  cumulative_share: number;
   category: 'A' | 'B' | 'C' | string;
 }
 

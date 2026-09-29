@@ -3,17 +3,15 @@
  */
 
 export interface KpiPeriodMetrics {
-  total_revenue: number;
-  total_orders: number;
-  units_sold: number;
-  average_order_value: number;
+  revenue: string | number;
+  orders: number;
+  aov: string | number;
 }
 
 export interface KpiGrowthMetrics {
-  revenue_growth: number;
-  orders_growth: number;
-  units_growth: number;
-  aov_growth: number;
+  revenue_growth_pct: number | null;
+  orders_growth_pct: number | null;
+  aov_growth_pct: number | null;
 }
 
 export interface AnalyticsKpisResponse {
@@ -27,30 +25,69 @@ export interface AnalyticsKpisResponse {
 
 export interface AnalyticsTrendPoint {
   date: string;
-  revenue: number;
+  revenue: string | number;
   orders: number;
-  units: number;
+  aov: string | number;
 }
 
 export interface AnalyticsTrendResponse {
-  store_id?: string;
-  points: AnalyticsTrendPoint[];
-  total_revenue: number;
-  total_orders: number;
+  period_days: number;
+  interval: string;
+  items: AnalyticsTrendPoint[];
 }
 
-export interface DayOfWeekDataPoint {
-  day_of_week: number;
+export interface DayOfWeekPoint {
+  day_index: number;
   day_name: string;
-  order_count: number;
-  revenue: number;
-  percentage_of_week: number;
+  revenue: string | number;
+  orders: number;
+  pct_of_week: number;
 }
 
-export interface CustomerAnalyticsSummary {
-  total_customers: number;
-  repeat_customer_rate: number;
-  average_clv: number;
-  churn_rate_risk: number;
-  cohort_data?: Record<string, unknown>;
+export interface DayOfWeekResponse {
+  period_days: number;
+  peak_day: string;
+  peak_revenue: string | number;
+  peak_pct: number;
+  items: DayOfWeekPoint[];
+}
+
+export interface ProductGrowthPoint {
+  store_id?: string | null;
+  sku: string;
+  product_name: string;
+  units: number;
+  revenue: string | number;
+  previous_units: number;
+  growth_pct: number | null;
+}
+
+export interface ProductGrowthResponse {
+  period_days: number;
+  items: ProductGrowthPoint[];
+}
+
+export interface SegmentBreakdown {
+  name: string;
+  count: number;
+  percentage: number;
+  description?: string;
+}
+
+export interface CustomerSummary {
+  customer_email: string;
+  total_orders: number;
+  total_spend: string;
+  average_order_value: string;
+  first_order_date: string;
+  last_order_date: string;
+}
+
+export interface CustomerAnalyticsResponse {
+  total_customers_identified: number;
+  orders_without_customer_email: number;
+  churn_rate_pct: number;
+  average_clv: string;
+  segments: SegmentBreakdown[];
+  top_customers_by_clv: CustomerSummary[];
 }

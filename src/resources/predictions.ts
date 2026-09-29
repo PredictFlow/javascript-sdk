@@ -3,10 +3,11 @@ import {
   Prediction,
   ProductForecastRequest,
   StoreForecastRequest,
-  StockoutSimulationRequest,
-  StockoutSimulationResult,
-  InventoryRecommendation,
-  PolicyOptimizationResult,
+  ForecastBatchResponse,
+  SimulationResponse,
+  StockoutResponse,
+  InventoryRecommendationResponse,
+  PolicyOptimizationResponse,
 } from '../types/predictions.types';
 
 export class PredictionsResource extends BaseResource {
@@ -14,28 +15,56 @@ export class PredictionsResource extends BaseResource {
    * Generate an AI-driven demand forecast for a single product.
    */
   async forecastProduct(productId: string, options?: ProductForecastRequest): Promise<Prediction> {
-    return this.http.post<Prediction>(`/products/${productId}/forecast`, options);
+    return this.http.post<Prediction>(`/products/${productId}/forecast`, undefined, {
+      query: options as Record<string, string | number | undefined>,
+    });
   }
 
   /**
-   * Generate batch demand forecasts for multiple products across a store.
+   * Batch generate demand forecasts for all products in a store.
    */
-  async forecastStore(storeId: string, options?: StoreForecastRequest): Promise<Prediction[]> {
-    return this.http.post<Prediction[]>(`/products/store/${storeId}/forecast`, options);
+  async forecastStore(storeId: string, options?: StoreForecastRequest): Promise<ForecastBatchResponse> {
+    return this.http.post<ForecastBatchResponse>(`/products/store/${storeId}/forecast`, undefined, {
+      query: options as Record<string, string | number | undefined>,
+    });
   }
 
   /**
-   * Run a stockout risk simulation on an existing prediction.
+   * Run Monte Carlo demand simulations around an existing forecast.
    */
-  async simulateStockout(predictionId: string, params?: StockoutSimulationRequest): Promise<StockoutSimulationResult> {
-    return this.http.post<StockoutSimulationResult>(`/predictions/${predictionId}/stockout`, params);
+  async simulate(
+    predictionId: string,
+    options?: { n_simulations?: number; distribution?: 'poisson' | 'negative_binomial' | 'normal' }
+  ): Promise<SimulationResponse> {
+    return this.http.post<SimulationResponse>(`/predictions/${predictionId}/simulate`, undefined, {
+      query: options,
+    });
   }
 
   /**
-   * Get intelligent inventory reorder recommendations (optimal quantity, reorder point).
+   * Simulate stockout probability and days until stockout for a prediction.
    */
-  async getInventoryRecommendation(predictionId: string): Promise<InventoryRecommendation> {
-    return this.http.post<InventoryRecommendation>(`/predictions/${predictionId}/inventory-recommendation`);
+  async simulateStockout(
+    predictionId: string,
+    options?: { current_stock?: number }
+  ): Promise<StockoutResponse> {
+    return this.http.post<StockoutResponse>(`/predictions/${predictionId}/stockout`, undefined, {
+      query: options,
+    });
+  }
+
+  /**
+   * Get intelligent inventory reorder recommendations (optimal quantity, reorder point, urgency).
+   */
+  async getInventoryRecommendation(
+    predictionId: string,
+    options?: { current_stock?: number; lead_time_days?: number; target_service_level?: number }
+  ): Promise<InventoryRecommendationResponse> {
+    return this.http.post<InventoryRecommendationResponse>(
+      `/predictions/${predictionId}/inventory-recommendation`,
+      undefined,
+      { query: options }
+    );
   }
 
   /**
@@ -43,15 +72,19 @@ export class PredictionsResource extends BaseResource {
    */
   async optimizePolicy(
     predictionId: string,
-    options?: { target_service_level?: number }
-  ): Promise<PolicyOptimizationResult> {
-    return this.http.post<PolicyOptimizationResult>(`/predictions/${predictionId}/optimize-policy`, options);
+    options?: { current_stock?: number; lead_time_days?: number; target_service_level?: number }
+  ): Promise<PolicyOptimizationResponse> {
+    return this.http.post<PolicyOptimizationResponse>(
+      `/predictions/${predictionId}/optimize-policy`,
+      undefined,
+      { query: options }
+    );
   }
 
   /**
-   * Evaluate historical accuracy metrics for a prediction.
+   * Backtest and evaluate historical accuracy metrics for a prediction.
    */
-  async evaluate(predictionId: string): Promise<Record<string, unknown>> {
-    return this.http.post<Record<string, unknown>>(`/predictions/${predictionId}/evaluate`);
+  async evaluate(predictionId: string): Promise<Prediction> {
+    return this.http.post<Prediction>(`/predictions/${predictionId}/evaluate`);
   }
 }

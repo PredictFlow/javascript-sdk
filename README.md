@@ -239,6 +239,14 @@ npm run typecheck
 
 ---
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, the PR process, and what a reviewer checks first.
+
+## Security
+
+Found a vulnerability? See [SECURITY.md](SECURITY.md) - please don't open a public issue for it.
+
 ## License
 
 MIT © [PredictFlow](https://predictflow.co)

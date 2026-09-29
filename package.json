@@ -2,7 +2,7 @@
   "name": "@predictflow/sdk",
   "version": "0.1.1",
   "type": "module",
-  "description": "Official JavaScript and TypeScript SDK for PredictFlow",
+  "description": "Official TypeScript/JavaScript SDK for PredictFlow - demand forecasting, inventory intelligence, and pricing optimization for Shopify and WooCommerce stores",
   "keywords": [
     "predictflow",
     "predictions",
@@ -10,9 +10,16 @@
     "inventory-intelligence",
     "ecommerce-analytics",
     "sdk",
-    "typescript"
+    "typescript",
+    "api-client",
+    "rest-api",
+    "shopify",
+    "woocommerce"
   ],
-  "author": "PredictFlow",
+  "author": {
+    "name": "PredictFlow",
+    "url": "https://predictflow.co"
+  },
   "license": "MIT",
   "homepage": "https://predictflow.co",
   "repository": {

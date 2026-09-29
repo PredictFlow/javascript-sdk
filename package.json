@@ -1,6 +1,6 @@
 {
   "name": "@predictflow/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Official TypeScript/JavaScript SDK for PredictFlow - demand forecasting, inventory intelligence, and pricing optimization for Shopify and WooCommerce stores",
   "keywords": [

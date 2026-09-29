@@ -4,6 +4,10 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@predictflow/sdk": ["./src/index.ts"]
+    },
     "resolveJsonModule": true,
     "allowJs": false,
     "declaration": true,
@@ -27,6 +31,6 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "examples"]
+  "include": ["src/**/*", "tests/**/*", "examples/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

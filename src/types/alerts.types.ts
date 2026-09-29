@@ -1,66 +1,54 @@
 /**
- * Alert & Action Feed Types for PredictFlow SDK
+ * Alert & Notification Rule Types for PredictFlow SDK
  */
 
-export type AlertMetricType = 'low_stock' | 'dead_stock' | 'sales_spike' | 'sales_drop' | 'stockout_risk' | string;
+export type AlertMetricType =
+  | 'low_stock'
+  | 'stockout_risk'
+  | 'forecast_accuracy_drop'
+  | 'margin_below'
+  | 'revenue_drop';
 
-export interface AlertRule {
-  id: string;
-  store_id: string;
-  name: string;
+export interface AlertTemplate {
   metric_type: AlertMetricType;
-  threshold_value: number;
-  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte' | string;
-  is_active: boolean;
-  channels: string[];
-  created_at: string;
-  updated_at: string;
+  name: string;
+  description: string;
+  default_threshold: string | number;
+  supports_product_scope: boolean;
 }
 
 export interface AlertRuleCreateInput {
-  name: string;
   metric_type: AlertMetricType;
-  threshold_value: number;
-  condition: 'gt' | 'lt' | 'eq' | 'gte' | 'lte' | string;
+  name?: string;
+  threshold?: number | string;
+  product_ids?: string[];
   is_active?: boolean;
-  channels?: string[];
 }
 
 export interface AlertRuleUpdateInput {
   name?: string;
-  threshold_value?: number;
-  condition?: string;
+  threshold?: number | string;
   is_active?: boolean;
-  channels?: string[];
 }
 
-export interface AlertTemplate {
+export interface AlertRule {
   id: string;
+  store_id: string;
+  product_ids: string[];
   name: string;
-  description: string;
   metric_type: AlertMetricType;
-  default_threshold: number;
-  default_condition: string;
+  threshold: string | number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AlertHistoryItem {
   id: string;
-  rule_id: string;
-  store_id: string;
-  product_id?: string | null;
-  message: string;
-  triggered_value: number;
-  status: 'triggered' | 'acknowledged' | 'resolved';
-  created_at: string;
-}
-
-export interface ActionFeedItem {
-  id: string;
-  type: 'reorder' | 'dead_stock_discount' | 'price_adjust' | 'stockout_warning';
-  title: string;
-  description: string;
-  product_id?: string;
-  impact_score: number;
-  suggested_action: string;
-  created_at: string;
+  alert_rule_id: string;
+  product_id: string | null;
+  metric_value: string | number;
+  threshold: string | number;
+  triggered_at: string;
+  resolved_at: string | null;
 }

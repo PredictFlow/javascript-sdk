@@ -1,4 +1,4 @@
-import { PredictFlow, ValidationError, computeHmacSha256 } from '../dist/index.mjs';
+import { PredictFlow, ValidationError, computeHmacSha256 } from '@predictflow/sdk';
 
 /**
  * Example webhook listener for Express / Node.js
@@ -47,7 +47,6 @@ function handleIncomingWebhook(rawBody: string, signatureHeader: string) {
 }
 
 // Simulated execution with valid signature
-const predictFlow = new PredictFlow();
 const secret = 'whsec_demo_123';
 const mockPayload = JSON.stringify({
   id: 'evt_demo_99',

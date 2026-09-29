@@ -1,4 +1,5 @@
 import { BaseResource } from '../core/base-resource';
+import { QueryParams } from '../core/request-builder';
 import {
   Product,
   ProductListParams,
@@ -8,6 +9,9 @@ import {
   ABCAnalysisResponse,
   ProductCostUpdateInput,
   MarginResponse,
+  InventorySnapshot,
+  GetInventoryHistoryOptions,
+  GetForecastHistoryOptions,
 } from '../types/products.types';
 import { Prediction } from '../types/predictions.types';
 
@@ -17,7 +21,7 @@ export class ProductsResource extends BaseResource {
    */
   async list(params?: ProductListParams): Promise<ProductListResponse> {
     return this.http.get<ProductListResponse>('/products', {
-      query: params as Record<string, string | number | undefined>,
+      query: params as unknown as QueryParams,
     });
   }
 
@@ -33,7 +37,7 @@ export class ProductsResource extends BaseResource {
    */
   async listLowStock(storeId: string, options?: { threshold?: number }): Promise<LowStockResponse> {
     return this.http.get<LowStockResponse>(`/products/store/${storeId}/low-stock`, {
-      query: options,
+      query: options as unknown as QueryParams,
     });
   }
 
@@ -42,7 +46,7 @@ export class ProductsResource extends BaseResource {
    */
   async getInventoryHealth(storeId: string, options?: { threshold?: number; overstock_threshold?: number }): Promise<InventoryHealthResponse> {
     return this.http.get<InventoryHealthResponse>(`/products/store/${storeId}/inventory-health`, {
-      query: options,
+      query: options as unknown as QueryParams,
     });
   }
 
@@ -51,7 +55,7 @@ export class ProductsResource extends BaseResource {
    */
   async getAbcAnalysis(storeId: string, options?: { days?: number }): Promise<ABCAnalysisResponse> {
     return this.http.get<ABCAnalysisResponse>(`/products/store/${storeId}/abc-analysis`, {
-      query: options,
+      query: options as unknown as QueryParams,
     });
   }
 
@@ -60,29 +64,33 @@ export class ProductsResource extends BaseResource {
    */
   async getTopSellers(storeId: string, options?: { days?: number; limit?: number; by?: 'revenue' | 'units' }): Promise<{ period_days: number; items: Record<string, unknown>[] }> {
     return this.http.get<{ period_days: number; items: Record<string, unknown>[] }>(`/products/store/${storeId}/top-sellers`, {
-      query: options,
+      query: options as unknown as QueryParams,
     });
   }
 
   /**
    * Get historical inventory level snapshots for a product.
    */
-  async getInventoryHistory(productId: string): Promise<Record<string, unknown>[]> {
-    return this.http.get<Record<string, unknown>[]>(`/products/${productId}/inventory-history`);
+  async getInventoryHistory(productId: string, options?: GetInventoryHistoryOptions): Promise<InventorySnapshot[]> {
+    return this.http.get<InventorySnapshot[]>(`/products/${productId}/inventory-history`, {
+      query: options as unknown as QueryParams,
+    });
   }
 
   /**
    * Get historical generated forecasts for a product.
    */
-  async getForecastHistory(productId: string): Promise<Prediction[]> {
-    return this.http.get<Prediction[]>(`/products/${productId}/forecast-history`);
+  async getForecastHistory(productId: string, options?: GetForecastHistoryOptions): Promise<Prediction[]> {
+    return this.http.get<Prediction[]>(`/products/${productId}/forecast-history`, {
+      query: options as unknown as QueryParams,
+    });
   }
 
   /**
    * Update product cost price for margin calculation.
    */
-  async updateCost(productId: string, data: ProductCostUpdateInput): Promise<Product> {
-    return this.http.patch<Product>(`/products/${productId}/cost`, data);
+  async updateCost(productId: string, data: ProductCostUpdateInput): Promise<MarginResponse> {
+    return this.http.patch<MarginResponse>(`/products/${productId}/cost`, data);
   }
 
   /**

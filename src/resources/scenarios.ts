@@ -1,11 +1,14 @@
 import { BaseResource } from '../core/base-resource';
+import { QueryParams } from '../core/request-builder';
 import {
   Scenario,
   ScenarioCreateInput,
   ScenarioUpdateInput,
+  ScenarioCloneInput,
+  ScenarioResult,
   ScenarioComparison,
+  ScenarioCompareParams,
 } from '../types/scenarios.types';
-import { MessageResponse } from '../types/common';
 
 export class ScenariosResource extends BaseResource {
   /**
@@ -39,30 +42,30 @@ export class ScenariosResource extends BaseResource {
   /**
    * Run/execute simulation calculations for a scenario.
    */
-  async execute(scenarioId: string): Promise<Scenario> {
-    return this.http.post<Scenario>(`/scenarios/${scenarioId}/execute`);
+  async execute(scenarioId: string): Promise<ScenarioResult> {
+    return this.http.post<ScenarioResult>(`/scenarios/${scenarioId}/execute`);
   }
 
   /**
-   * Clone an existing scenario with new parameters.
+   * Clone an existing scenario with new parameters or custom name.
    */
-  async clone(scenarioId: string, options?: { new_name?: string }): Promise<Scenario> {
-    return this.http.post<Scenario>(`/scenarios/${scenarioId}/clone`, options);
+  async clone(scenarioId: string, data: ScenarioCloneInput = {}): Promise<Scenario> {
+    return this.http.post<Scenario>(`/scenarios/${scenarioId}/clone`, data);
   }
 
   /**
-   * Compare multiple scenarios side-by-side.
+   * Compare two scenarios side-by-side.
    */
-  async compare(storeId: string, scenarioIds: string[]): Promise<ScenarioComparison> {
+  async compare(storeId: string, params: ScenarioCompareParams): Promise<ScenarioComparison> {
     return this.http.get<ScenarioComparison>(`/stores/${storeId}/scenarios/compare`, {
-      query: { scenario_ids: scenarioIds },
+      query: params as unknown as QueryParams,
     });
   }
 
   /**
    * Delete a scenario.
    */
-  async delete(scenarioId: string): Promise<MessageResponse> {
-    return this.http.delete<MessageResponse>(`/scenarios/${scenarioId}`);
+  async delete(scenarioId: string): Promise<void> {
+    return this.http.delete<void>(`/scenarios/${scenarioId}`);
   }
 }

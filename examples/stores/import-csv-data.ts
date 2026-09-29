@@ -1,4 +1,4 @@
-import { PredictFlow, type Store, type ImportResult } from '../../dist/index.mjs';
+import { PredictFlow, type Store, type ImportResult } from '@predictflow/sdk';
 
 async function main() {
   const predictFlow = new PredictFlow({

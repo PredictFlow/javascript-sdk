@@ -6,7 +6,7 @@ import {
   type LowStockResponse,
   type ABCAnalysisResponse,
   type MarginResponse,
-} from '../../dist/index.mjs';
+} from '@predictflow/sdk';
 
 async function main() {
   const predictFlow = new PredictFlow({
@@ -25,6 +25,10 @@ async function main() {
 
   // Use the first store that has products, or import into the first store
   let targetStore = stores[0];
+  if (!targetStore) {
+    console.log('No stores found. Please run stores example first.');
+    return;
+  }
   let productList: ProductListResponse = await predictFlow.products.list({ store_id: targetStore.id });
 
   if (productList.items.length === 0) {
@@ -50,7 +54,11 @@ PROD-BELT-BRN,Leather Dress Belt,34.99,80,12.00,3.00`;
   }
   console.log('');
 
-  const targetProduct: Product = productList.items[0];
+  const targetProduct = productList.items[0];
+  if (!targetProduct) {
+    console.log('No products found in store.');
+    return;
+  }
   const productId = targetProduct.id;
 
   // STEP 3: Get single product details by ID

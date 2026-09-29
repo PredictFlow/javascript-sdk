@@ -1,5 +1,5 @@
 /**
- * Scenario Simulation Types for PredictFlow SDK
+ * Scenario Simulation & What-If Types for PredictFlow SDK
  */
 
 export interface Scenario {
@@ -7,53 +7,65 @@ export interface Scenario {
   store_id: string;
   name: string;
   description?: string | null;
-  status: 'draft' | 'running' | 'completed' | 'failed' | string;
-  parameters: Record<string, unknown>;
-  results?: ScenarioResult | null;
+  price_change_pct: number;
+  demand_shift_pct: number;
   created_at: string;
-  updated_at: string;
 }
 
 export interface ScenarioCreateInput {
   name: string;
   description?: string;
-  parameters: {
-    price_change_pct?: number;
-    marketing_budget_change_pct?: number;
-    supply_lead_time_days?: number;
-    target_product_ids?: string[];
-    [key: string]: unknown;
-  };
+  price_change_pct?: number;
+  demand_shift_pct?: number;
 }
 
 export interface ScenarioUpdateInput {
   name?: string;
   description?: string;
-  parameters?: Record<string, unknown>;
+  price_change_pct?: number;
+  demand_shift_pct?: number;
 }
 
-export interface ScenarioResult {
-  projected_revenue: number;
-  projected_profit: number;
-  projected_units_sold: number;
-  stockout_risk_count: number;
-  product_impacts?: ScenarioProductImpact[];
+export interface ScenarioCloneInput {
+  name?: string;
 }
 
 export interface ScenarioProductImpact {
   product_id: string;
-  sku: string;
-  name: string;
-  revenue_delta_pct: number;
-  units_delta_pct: number;
-  stockout_risk: boolean;
+  product_sku: string;
+  product_name: string;
+  current_price: number;
+  new_price: number;
+  baseline_monthly_units: number;
+  elasticity_confidence: string;
+  current_revenue: number;
+  new_revenue: number;
+  revenue_change_pct: number;
+  current_profit: number | null;
+  new_profit: number | null;
+  profit_change_pct: number | null;
+}
+
+export interface ScenarioResult {
+  scenario_id: string;
+  scenario_name: string;
+  price_change_pct: number;
+  demand_shift_pct: number;
+  products: ScenarioProductImpact[];
+  total_current_revenue: number;
+  total_new_revenue: number;
+  total_revenue_change_pct: number;
+  total_current_profit: number | null;
+  total_new_profit: number | null;
+  total_profit_change_pct: number | null;
 }
 
 export interface ScenarioComparison {
-  scenarios: Scenario[];
-  metric_comparisons: {
-    revenue: Record<string, number>;
-    profit: Record<string, number>;
-    units: Record<string, number>;
-  };
+  scenario_a: ScenarioResult;
+  scenario_b: ScenarioResult;
+}
+
+export interface ScenarioCompareParams {
+  scenario_a_id: string;
+  scenario_b_id: string;
 }

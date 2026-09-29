@@ -1,4 +1,4 @@
-import { PredictFlow } from '../dist/index.mjs';
+import { PredictFlow } from '@predictflow/sdk';
 
 async function main() {
   const predictFlow = new PredictFlow({

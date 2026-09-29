@@ -5,7 +5,7 @@ import {
   type DayOfWeekResponse,
   type ProductGrowthResponse,
   type CustomerAnalyticsResponse,
-} from '../../dist/index.mjs';
+} from '@predictflow/sdk';
 
 async function main() {
   const predictFlow = new PredictFlow({
@@ -23,6 +23,10 @@ async function main() {
   }
 
   const targetStore = stores[0];
+  if (!targetStore) {
+    console.log('No stores found. Please run stores example first.');
+    return;
+  }
   console.log(`Analyzing Store: "${targetStore.name}" (ID: ${targetStore.id})\n`);
 
   // STEP 2: Dashboard KPIs & Growth Metrics

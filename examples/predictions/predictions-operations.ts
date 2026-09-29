@@ -5,7 +5,7 @@ import {
   type StockoutResponse,
   type InventoryRecommendationResponse,
   type PolicyOptimizationResponse,
-} from '../../dist/index.mjs';
+} from '@predictflow/sdk';
 
 async function main() {
   const predictFlow = new PredictFlow({
@@ -23,14 +23,17 @@ async function main() {
   }
 
   const store = stores[0];
+  if (!store) {
+    console.log('No stores found.');
+    return;
+  }
   const products = await predictFlow.products.list({ store_id: store.id });
 
-  if (products.items.length === 0) {
+  const targetProduct = products.items[0];
+  if (!targetProduct) {
     console.log('No products found in store.');
     return;
   }
-
-  const targetProduct = products.items[0];
   console.log(`Using Product: "${targetProduct.name}" (SKU: ${targetProduct.sku}, ID: ${targetProduct.id})\n`);
 
   // STEP 2: Generate a 30-day demand forecast (Prophet / ML)
@@ -50,8 +53,9 @@ async function main() {
     console.log(`ℹ️  Forecast generation note: ${err.message}`);
     // If not enough history on first item, check forecast history
     const pastForecasts = await predictFlow.products.getForecastHistory(targetProduct.id);
-    if (pastForecasts.length > 0) {
-      prediction = pastForecasts[0];
+    const firstPast = pastForecasts[0];
+    if (firstPast) {
+      prediction = firstPast;
       console.log(`   Using existing prediction ID: ${prediction.id}\n`);
     } else {
       console.log('No predictions available to simulate.');

@@ -69,6 +69,6 @@ describe('PredictFlow Client Initialization', () => {
 
     const result = await client.health();
     expect(result).toEqual({ status: 'healthy' });
-    expect(mockFetch.mock.calls[0][0]).toBe('https://api.predictflow.com/v1/health');
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.com/v1/health');
   });
 });

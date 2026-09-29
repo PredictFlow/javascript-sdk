@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { HttpClient } from '../../src/core/http-client';
 import { resolveConfig } from '../../src/config';
 import {
-  AuthenticationError,
   NotFoundError,
   ValidationError,
   RateLimitError,
-  InternalServerError,
   TimeoutError,
 } from '../../src/core/errors';
 
@@ -48,7 +46,7 @@ describe('HttpClient', () => {
     expect(result).toEqual({ success: true });
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
-    const [calledUrl, calledOptions] = mockFetch.mock.calls[0];
+    const [calledUrl, calledOptions] = mockFetch.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }];
     expect(calledUrl).toBe('https://api.predictflow.test/v1/predictions/forecast?storeId=store_1&horizonDays=30');
     expect(calledOptions.method).toBe('GET');
     expect(calledOptions.headers['Authorization']).toBe(`Bearer ${mockApiKey}`);
@@ -68,7 +66,7 @@ describe('HttpClient', () => {
     const result = await client.post('/predictions', payload);
 
     expect(result).toEqual({ id: 'pred_123', status: 'completed' });
-    const [, calledOptions] = mockFetch.mock.calls[0];
+    const [, calledOptions] = mockFetch.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }];
     expect(calledOptions.method).toBe('POST');
     expect(calledOptions.headers['Content-Type']).toBe('application/json');
     expect(calledOptions.body).toBe(JSON.stringify(payload));

@@ -41,8 +41,8 @@ describe('Domain Resources Integration', () => {
 
     const stores = await storesResource.list();
     expect(stores).toHaveLength(1);
-    expect(stores[0].name).toBe('My Brand');
-    expect(mockFetch.mock.calls[0][0]).toBe('https://api.predictflow.test/v1/stores');
+    expect(stores[0]!.name).toBe('My Brand');
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.test/v1/stores');
   });
 
   it('ProductsResource should get low-stock products', async () => {
@@ -57,8 +57,8 @@ describe('Domain Resources Integration', () => {
 
     const lowStock = await productsResource.listLowStock('store_1');
     expect(lowStock.items).toHaveLength(1);
-    expect(lowStock.items[0].sku).toBe('SKU-101');
-    expect(mockFetch.mock.calls[0][0]).toBe('https://api.predictflow.test/v1/products/store/store_1/low-stock');
+    expect(lowStock.items[0]!.sku).toBe('SKU-101');
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.test/v1/products/store/store_1/low-stock');
   });
 
   it('PredictionsResource should forecast product demand', async () => {
@@ -79,7 +79,7 @@ describe('Domain Resources Integration', () => {
     const prediction = await predictionsResource.forecastProduct('prod_99', { horizon_days: 30 });
     expect(prediction.id).toBe('pred_1');
     expect(prediction.forecast_data.total_forecasted_units).toBe(420);
-    expect(mockFetch.mock.calls[0][0]).toBe('https://api.predictflow.test/v1/products/prod_99/forecast');
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.test/v1/products/prod_99/forecast?horizon_days=30');
   });
 
   it('AnalyticsResource should get KPIs with period filtering', async () => {
@@ -91,15 +91,18 @@ describe('Domain Resources Integration', () => {
       headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({
         period_days: 30,
-        current: { total_revenue: 54000, total_orders: 1200 },
-        growth: { revenue_growth: 15.4 },
+        current: { revenue: 54000, orders: 1200, aov: 45 },
+        previous: { revenue: 47000, orders: 1100, aov: 42.72 },
+        growth: { revenue_growth_pct: 15.4, orders_growth_pct: 9.1, aov_growth_pct: 5.3 },
+        active_stores: 1,
+        products_tracked: 10,
       }),
     });
 
-    const kpis = await analyticsResource.getKpis({ period_days: 30, store_id: 'store_1' });
+    const kpis = await analyticsResource.getKpis({ days: 30, store_id: 'store_1' });
     expect(kpis.period_days).toBe(30);
-    expect(kpis.current.total_revenue).toBe(54000);
-    expect(mockFetch.mock.calls[0][0]).toBe('https://api.predictflow.test/v1/analytics/kpis?period_days=30&store_id=store_1');
+    expect(kpis.current.revenue).toBe(54000);
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.test/v1/analytics/kpis?days=30&store_id=store_1');
   });
 
   it('PricingResource should fetch price elasticity', async () => {
@@ -111,15 +114,15 @@ describe('Domain Resources Integration', () => {
       headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({
         product_id: 'prod_99',
-        elasticity_coefficient: -1.8,
-        elasticity_category: 'elastic',
-        optimal_price: 39.99,
+        elasticity: -1.8,
+        elasticity_type: 'elastic',
+        interpretation: 'Demand is elastic',
       }),
     });
 
     const elasticity = await pricingResource.getElasticity('prod_99');
-    expect(elasticity.elasticity_category).toBe('elastic');
-    expect(elasticity.optimal_price).toBe(39.99);
+    expect(elasticity.elasticity_type).toBe('elastic');
+    expect(elasticity.elasticity).toBe(-1.8);
   });
 
   it('ScenariosResource should create and simulate scenario', async () => {
@@ -133,20 +136,20 @@ describe('Domain Resources Integration', () => {
         id: 'scen_1',
         store_id: 'store_1',
         name: 'Black Friday 20% Off',
-        status: 'draft',
+        price_change_pct: -0.2,
       }),
     });
 
     const scenario = await scenariosResource.create('store_1', {
       name: 'Black Friday 20% Off',
-      parameters: { price_change_pct: -20 },
+      price_change_pct: -0.2,
     });
 
     expect(scenario.id).toBe('scen_1');
     expect(scenario.name).toBe('Black Friday 20% Off');
   });
 
-  it('AlertsResource should list action feed', async () => {
+  it('AlertsResource should list templates and rules', async () => {
     const alertsResource = new AlertsResource(http);
 
     mockFetch.mockResolvedValueOnce({
@@ -154,13 +157,13 @@ describe('Domain Resources Integration', () => {
       status: 200,
       headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => [
-        { id: 'act_1', type: 'reorder', title: 'Reorder SKU-101 immediately', impact_score: 95 },
+        { metric_type: 'low_stock', name: 'Low Stock', default_threshold: 10, supports_product_scope: true },
       ],
     });
 
-    const actionFeed = await alertsResource.getActionFeed('store_1');
-    expect(actionFeed).toHaveLength(1);
-    expect(actionFeed[0].impact_score).toBe(95);
+    const templates = await alertsResource.listTemplates();
+    expect(templates).toHaveLength(1);
+    expect(templates[0]!.metric_type).toBe('low_stock');
   });
 
   it('ExportsResource should trigger product catalog export', async () => {
@@ -169,17 +172,11 @@ describe('Domain Resources Integration', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      json: async () => ({
-        job_id: 'exp_123',
-        status: 'completed',
-        download_url: 'https://cdn.predictflow.com/exports/products.csv',
-        format: 'csv',
-      }),
+      headers: new Headers({ 'content-type': 'text/csv' }),
+      text: async () => 'SKU,Name,Price\nSKU-1,Product 1,29.99',
     });
 
-    const exportJob = await exportsResource.exportProducts('store_1', 'csv');
-    expect(exportJob.job_id).toBe('exp_123');
-    expect(exportJob.format).toBe('csv');
+    const csvContent = await exportsResource.exportProducts('store_1', { format: 'csv' });
+    expect(csvContent).toContain('SKU,Name,Price');
   });
 });

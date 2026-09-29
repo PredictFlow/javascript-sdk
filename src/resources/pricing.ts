@@ -1,43 +1,72 @@
 import { BaseResource } from '../core/base-resource';
+import { QueryParams } from '../core/request-builder';
 import {
-  PriceElasticityResponse,
-  PriceOptimizationRequest,
-  PriceOptimizationResponse,
-  PriceSimulationRequest,
-  PriceSimulationResponse,
+  ElasticityResponse,
+  OptimizeResponse,
+  SimulateResponse,
+  BatchOptimizeItem,
+  CrossElasticityResponse,
   CompetitorPrice,
   CompetitorPriceInput,
-  RepriceSuggestion,
+  RepriceSuggestionResponse,
+  GetElasticityOptions,
+  OptimizePriceOptions,
+  SimulatePriceOptions,
+  BatchOptimizeOptions,
+  GetCrossElasticityOptions,
 } from '../types/pricing.types';
-import { MessageResponse } from '../types/common';
 
 export class PricingResource extends BaseResource {
   /**
    * Get price elasticity analysis and sensitivity curve for a product.
    */
-  async getElasticity(productId: string): Promise<PriceElasticityResponse> {
-    return this.http.get<PriceElasticityResponse>(`/pricing/product/${productId}/elasticity`);
+  async getElasticity(productId: string, options?: GetElasticityOptions): Promise<ElasticityResponse> {
+    return this.http.get<ElasticityResponse>(`/pricing/product/${productId}/elasticity`, {
+      query: options as unknown as QueryParams,
+    });
   }
 
   /**
-   * Calculate optimal price point maximizing target metric (revenue, profit, or units).
+   * Calculate optimal price point maximizing target metric (revenue, profit, or volume).
    */
-  async optimize(productId: string, options?: PriceOptimizationRequest): Promise<PriceOptimizationResponse> {
-    return this.http.post<PriceOptimizationResponse>(`/pricing/product/${productId}/optimize`, options);
+  async optimize(productId: string, options?: OptimizePriceOptions): Promise<OptimizeResponse> {
+    return this.http.post<OptimizeResponse>(`/pricing/product/${productId}/optimize`, undefined, {
+      query: options as unknown as QueryParams,
+    });
   }
 
   /**
    * Simulate the impact of a hypothetical price change on product demand and profit.
    */
-  async simulate(productId: string, params: PriceSimulationRequest): Promise<PriceSimulationResponse> {
-    return this.http.post<PriceSimulationResponse>(`/pricing/product/${productId}/simulate`, params);
+  async simulate(productId: string, params: SimulatePriceOptions): Promise<SimulateResponse> {
+    return this.http.post<SimulateResponse>(`/pricing/product/${productId}/simulate`, undefined, {
+      query: params as unknown as QueryParams,
+    });
   }
 
   /**
    * Batch optimize prices for all active products in a store.
    */
-  async batchOptimize(storeId: string, options?: PriceOptimizationRequest): Promise<PriceOptimizationResponse[]> {
-    return this.http.post<PriceOptimizationResponse[]>(`/pricing/store/${storeId}/batch-optimize`, options);
+  async batchOptimize(storeId: string, options?: BatchOptimizeOptions): Promise<BatchOptimizeItem[]> {
+    return this.http.post<BatchOptimizeItem[]>(`/pricing/store/${storeId}/batch-optimize`, undefined, {
+      query: options as unknown as QueryParams,
+    });
+  }
+
+  /**
+   * Calculate cross-price elasticity between two products.
+   */
+  async getCrossElasticity(
+    productId: string,
+    relatedProductId: string,
+    options?: GetCrossElasticityOptions
+  ): Promise<CrossElasticityResponse> {
+    return this.http.get<CrossElasticityResponse>(
+      `/pricing/product/${productId}/cross-elasticity/${relatedProductId}`,
+      {
+        query: options as unknown as QueryParams,
+      }
+    );
   }
 
   /**
@@ -57,14 +86,14 @@ export class PricingResource extends BaseResource {
   /**
    * Delete a tracked competitor price.
    */
-  async deleteCompetitorPrice(productId: string, competitorPriceId: string): Promise<MessageResponse> {
-    return this.http.delete<MessageResponse>(`/products/${productId}/competitor-prices/${competitorPriceId}`);
+  async deleteCompetitorPrice(productId: string, competitorPriceId: string): Promise<void> {
+    return this.http.delete<void>(`/products/${productId}/competitor-prices/${competitorPriceId}`);
   }
 
   /**
    * Get intelligent repricing suggestion based on competitor movements.
    */
-  async getRepriceSuggestion(productId: string): Promise<RepriceSuggestion> {
-    return this.http.get<RepriceSuggestion>(`/products/${productId}/competitor-prices/reprice-suggestion`);
+  async getRepriceSuggestion(productId: string): Promise<RepriceSuggestionResponse> {
+    return this.http.get<RepriceSuggestionResponse>(`/products/${productId}/competitor-prices/reprice-suggestion`);
   }
 }

@@ -94,3 +94,18 @@ export interface MarginResponse {
   contribution_margin: number | null;
   contribution_margin_pct: number | null;
 }
+
+export interface InventorySnapshot {
+  id: string;
+  quantity: number;
+  snapshot_at: string;
+}
+
+export interface GetInventoryHistoryOptions {
+  days?: number;
+}
+
+export interface GetForecastHistoryOptions {
+  limit?: number;
+  horizon_days?: number;
+}

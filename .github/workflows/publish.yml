@@ -7,16 +7,21 @@ on:
 
 permissions:
   contents: read
+  id-token: write # required for npm trusted publishing (OIDC) - no NPM_TOKEN needed
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      # npm trusted publishing needs npm >= 11.5.1, which needs Node >=
+      # 22.14 - the separate CI workflow's 18/20/22 matrix is about
+      # testing broad consumer compatibility and is unrelated to this
+      # requirement, so it stays as-is.
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: '24'
           cache: npm
           registry-url: https://registry.npmjs.org
 
@@ -38,6 +43,9 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      # No NODE_AUTH_TOKEN / NPM_TOKEN - npm's CLI detects the OIDC
+      # context from id-token: write above and authenticates against
+      # the trusted-publisher relationship configured on npm's side
+      # (package Settings -> Trusted publishing), falling back to a
+      # token only if that's absent.
       - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

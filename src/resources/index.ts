@@ -6,4 +6,3 @@ export * from './pricing';
 export * from './scenarios';
 export * from './alerts';
 export * from './exports';
-export * from './webhooks';

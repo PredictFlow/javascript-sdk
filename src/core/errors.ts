@@ -109,6 +109,25 @@ export class ConnectionError extends PredictFlowError {
 }
 
 /**
+ * FastAPI/Pydantic validation failures (422s) return `detail` as an array
+ * of {msg, loc, type} objects, not a string - unwrapping it here means a
+ * ValidationError's .message is always the real field-level reason
+ * (matching pydantic's own "Value error, " prefix, which is stripped as
+ * an implementation detail) rather than the generic status-code fallback.
+ */
+function unwrapDetail(detail: unknown): string | null {
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => (item && typeof item === 'object' ? (item as { msg?: unknown }).msg : null))
+      .filter((msg): msg is string => typeof msg === 'string')
+      .map((msg) => msg.replace(/^Value error,\s*/, ''));
+    if (messages.length > 0) return messages.join(' ');
+  }
+  return null;
+}
+
+/**
  * Maps an HTTP status code and response payload to the appropriate PredictFlowError subclass.
  */
 export function createErrorFromResponse(
@@ -123,11 +142,13 @@ export function createErrorFromResponse(
 
   if (body && typeof body === 'object') {
     const raw = body as Record<string, unknown>;
-    if (typeof raw.detail === 'string') {
-      message = raw.detail;
+    const unwrapped = unwrapDetail(raw.detail);
+    if (unwrapped) {
+      message = unwrapped;
     } else if (typeof raw.message === 'string') {
       message = raw.message;
-    } else if (raw.detail) {
+    }
+    if (raw.detail !== undefined) {
       details = raw.detail;
     }
 

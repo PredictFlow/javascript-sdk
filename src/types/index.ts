@@ -7,4 +7,3 @@ export * from './pricing.types';
 export * from './scenarios.types';
 export * from './alerts.types';
 export * from './exports.types';
-export * from './webhooks.types';

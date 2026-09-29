@@ -11,7 +11,7 @@ export interface ClientOptions {
 
   /**
    * The base URL for the PredictFlow API.
-   * @default 'https://api.predictflow.com/v1'
+   * @default 'https://predictflow.co/api/v1'
    */
   baseUrl?: string;
 
@@ -47,7 +47,7 @@ export interface ResolvedClientConfig {
   fetch: typeof fetch;
 }
 
-export const DEFAULT_BASE_URL = 'https://api.predictflow.com/v1';
+export const DEFAULT_BASE_URL = 'https://predictflow.co/api/v1';
 export const DEFAULT_TIMEOUT_MS = 30000;
 export const DEFAULT_MAX_RETRIES = 2;
 

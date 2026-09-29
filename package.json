@@ -14,6 +14,14 @@
   ],
   "author": "PredictFlow",
   "license": "MIT",
+  "homepage": "https://predictflow.co",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PredictFlow/javascript-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PredictFlow/javascript-sdk/issues"
+  },
   "publishConfig": {
     "access": "public"
   },

@@ -62,8 +62,17 @@ export class HttpClient {
     options: RequestOptions = {}
   ): Promise<T> {
     const url = buildUrl(this.config.baseUrl, path, options.query);
-    const maxRetries = options.maxRetries ?? this.config.maxRetries;
     const timeoutMs = options.timeoutMs ?? this.config.timeoutMs;
+
+    // POST/PATCH aren't guaranteed idempotent - retrying one whose
+    // response was lost after the server already processed it (a sync
+    // trigger, a CSV import, a forecast run) risks duplicate side
+    // effects, with no idempotency-key mechanism to protect against it.
+    // GET/PUT/DELETE are safe to retry by default; a caller who knows a
+    // specific POST/PATCH endpoint is safe can still opt in by passing
+    // maxRetries explicitly on that call.
+    const isIdempotentMethod = method === 'GET' || method === 'PUT' || method === 'DELETE';
+    const maxRetries = options.maxRetries ?? (isIdempotentMethod ? this.config.maxRetries : 0);
 
     const headers: Record<string, string> = {
       Accept: 'application/json',
@@ -89,19 +98,24 @@ export class HttpClient {
       }
     }
 
+    // Registered once, outside the retry loop, against whichever
+    // attempt's controller is currently live - attaching a fresh
+    // listener to the caller's signal on every retry would leak one
+    // listener per attempt for the lifetime of the request.
+    let currentController: AbortController | undefined;
+    if (options.signal) {
+      options.signal.addEventListener('abort', () => currentController?.abort(), { once: true });
+    }
+
     let attempt = 0;
     while (true) {
       attempt++;
       const controller = new AbortController();
+      currentController = controller;
       let timer: NodeJS.Timeout | undefined;
 
       if (timeoutMs > 0) {
         timer = setTimeout(() => controller.abort(), timeoutMs);
-      }
-
-      // Link external abort signal if supplied
-      if (options.signal) {
-        options.signal.addEventListener('abort', () => controller.abort(), { once: true });
       }
 
       try {

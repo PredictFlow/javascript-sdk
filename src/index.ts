@@ -39,10 +39,3 @@ export * from './resources';
 
 // Types
 export * from './types';
-
-// Utilities
-export {
-  computeHmacSha256,
-  secureCompare,
-  verifySignature,
-} from './utils';

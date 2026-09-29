@@ -9,7 +9,6 @@ import {
   ScenariosResource,
   AlertsResource,
   ExportsResource,
-  WebhooksResource,
 } from './resources';
 
 /**
@@ -79,11 +78,6 @@ export class PredictFlow {
   readonly exports: ExportsResource;
 
   /**
-   * Webhook HMAC signature verification and typed event construction.
-   */
-  readonly webhooks: WebhooksResource;
-
-  /**
    * Creates an instance of the PredictFlow client.
    *
    * @param options Client configuration options or API key string.
@@ -101,7 +95,6 @@ export class PredictFlow {
     this.scenarios = new ScenariosResource(this.http);
     this.alerts = new AlertsResource(this.http);
     this.exports = new ExportsResource(this.http);
-    this.webhooks = new WebhooksResource(this.http);
   }
 
   /**

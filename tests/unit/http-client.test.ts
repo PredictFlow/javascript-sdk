@@ -151,6 +151,62 @@ describe('HttpClient', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
+  it('should NOT auto-retry a POST on 500, even with maxRetries configured', async () => {
+    // POST isn't guaranteed idempotent - retrying one whose response was
+    // lost after the server already processed it risks duplicate side
+    // effects, so it must not retry unless the caller opts in per-call.
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ detail: 'Temporary database failure' }),
+    });
+
+    const client = createClient({ maxRetries: 2 });
+
+    await expect(client.post('/predictions', { productId: 'prod_1' })).rejects.toThrow('Temporary database failure');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('should retry a POST when maxRetries is explicitly passed for that call', async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ detail: 'Temporary database failure' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: async () => ({ recovered: true }),
+      });
+
+    const client = createClient({ maxRetries: 0 });
+    const result = await client.post<{ recovered: boolean }>('/predictions', {}, { maxRetries: 1 });
+
+    expect(result).toEqual({ recovered: true });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('should unwrap a Pydantic-style array `detail` into a readable ValidationError message', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 422,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({
+        detail: [
+          { loc: ['body', 'horizon_days'], msg: 'Value error, horizon_days must be positive', type: 'value_error' },
+        ],
+      }),
+    });
+
+    const client = createClient({ maxRetries: 0 });
+
+    await expect(client.post('/predictions', {})).rejects.toThrow('horizon_days must be positive');
+  });
+
   it('should throw TimeoutError when request exceeds timeoutMs', async () => {
     // Simulate an aborted fetch
     mockFetch.mockImplementation(async (_url, { signal }) => {

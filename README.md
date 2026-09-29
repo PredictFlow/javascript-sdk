@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)]()
 
-The official JavaScript and TypeScript SDK for [PredictFlow](https://predictflow.com) — an intelligent demand forecasting, inventory optimization, and e-commerce analytics platform.
+The official JavaScript and TypeScript SDK for [PredictFlow](https://predictflow.co) — an intelligent demand forecasting, inventory optimization, and e-commerce analytics platform.
 
 ---
 
@@ -14,8 +14,7 @@ The official JavaScript and TypeScript SDK for [PredictFlow](https://predictflow
 - ⚡ **Zero Runtime Dependencies** — Ultra-lightweight, high-performance footprint.
 - 🔒 **100% Type-Safe** — Complete TypeScript definitions generated from the official PredictFlow API.
 - 🌐 **Universal Compatibility** — Works seamlessly in Node.js 18+, Next.js (Server & Edge), Browsers, Bun, and Cloudflare Workers.
-- 🔁 **Automatic Retries & Backoff** — Built-in resilience for rate limits (429) and transient network errors.
-- 🔐 **Webhook Verification** — Timing-safe HMAC-SHA256 signature verification for webhook event ingestion.
+- 🔁 **Automatic Retries & Backoff** — Built-in resilience for rate limits (429) and transient network errors on safe, idempotent requests.
 - 📦 **Dual ESM & CommonJS** — Native support for `import` and `require()`.
 
 ---
@@ -161,43 +160,6 @@ console.log(`Projected Monthly Revenue: $${sim.predicted_monthly_revenue}`);
 
 ---
 
-### 🔔 Webhooks & Signature Verification
-
-Verify incoming webhooks securely with constant-time HMAC comparison:
-
-```typescript
-import { PredictFlow, ValidationError } from '@predictflow/sdk';
-
-const predictFlow = new PredictFlow();
-
-// Express / Next.js webhook handler
-app.post('/api/webhook', (req, res) => {
-  const signature = req.headers['x-predictflow-signature'];
-  const secret = process.env.PREDICTFLOW_WEBHOOK_SECRET!;
-
-  try {
-    const event = predictFlow.webhooks.constructEvent({
-      payload: req.body, // Raw body string or buffer
-      signature,
-      secret,
-    });
-
-    if (event.event === 'inventory.low_stock') {
-      console.log('Low stock event received:', event.data);
-    }
-
-    res.status(200).json({ received: true });
-  } catch (err) {
-    if (err instanceof ValidationError) {
-      return res.status(400).send('Invalid webhook signature');
-    }
-    res.status(500).send('Webhook error');
-  }
-});
-```
-
----
-
 ## Error Handling
 
 The SDK provides a typed error hierarchy for error handling:
@@ -236,10 +198,10 @@ try {
 ```typescript
 const predictFlow = new PredictFlow({
   // PredictFlow API Key (defaults to process.env.PREDICTFLOW_API_KEY)
-  apiKey: 'pf_live_...',
+  apiKey: 'pk_live_...',
 
-  // Custom API Base URL (defaults to 'https://api.predictflow.com/v1')
-  baseUrl: 'https://api.predictflow.com/v1',
+  // Custom API Base URL (defaults to 'https://predictflow.co/api/v1')
+  baseUrl: 'https://predictflow.co/api/v1',
 
   // Request timeout in milliseconds (defaults to 30000ms / 30s)
   timeoutMs: 15000,
@@ -279,4 +241,4 @@ npm run typecheck
 
 ## License
 
-MIT © [PredictFlow](https://predictflow.com)
+MIT © [PredictFlow](https://predictflow.co)

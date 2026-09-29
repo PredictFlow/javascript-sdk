@@ -9,14 +9,13 @@ import {
   ScenariosResource,
   AlertsResource,
   ExportsResource,
-  WebhooksResource,
 } from '../../src/resources';
 
 describe('PredictFlow Client Initialization', () => {
   it('should instantiate with a string API key', () => {
     const client = new PredictFlow('pf_test_key_123');
     expect(client.config.apiKey).toBe('pf_test_key_123');
-    expect(client.config.baseUrl).toBe('https://api.predictflow.com/v1');
+    expect(client.config.baseUrl).toBe('https://predictflow.co/api/v1');
     expect(client.config.timeoutMs).toBe(30000);
     expect(client.config.maxRetries).toBe(2);
   });
@@ -51,7 +50,6 @@ describe('PredictFlow Client Initialization', () => {
     expect(client.scenarios).toBeInstanceOf(ScenariosResource);
     expect(client.alerts).toBeInstanceOf(AlertsResource);
     expect(client.exports).toBeInstanceOf(ExportsResource);
-    expect(client.webhooks).toBeInstanceOf(WebhooksResource);
   });
 
   it('should call health check endpoint', async () => {
@@ -69,6 +67,6 @@ describe('PredictFlow Client Initialization', () => {
 
     const result = await client.health();
     expect(result).toEqual({ status: 'healthy' });
-    expect(mockFetch.mock.calls[0]![0]).toBe('https://api.predictflow.com/v1/health');
+    expect(mockFetch.mock.calls[0]![0]).toBe('https://predictflow.co/api/v1/health');
   });
 });

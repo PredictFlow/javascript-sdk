@@ -37,6 +37,19 @@ All four should be clean before you open a PR - CI runs the first three (typeche
 5. Commit messages: a plain, present-tense description of what changed and why is enough (e.g. `Fix retry behavior for non-idempotent requests`). No enforced format.
 6. Open the PR against `main` and fill in the template - the test-plan and API-verification checkboxes aren't decoration, they're what a reviewer actually checks first.
 
+## Versioning & breaking changes
+
+This package follows [Semantic Versioning](https://semver.org/), with the usual pre-1.0 caveat: anything in a `0.x` release can technically break between minor versions, but we still treat it like a real breaking-change bump (`0.1.x` → `0.2.0`), not a patch, once it's past initial development. Concretely, a **breaking change** is any of:
+
+- Removing or renaming a public export (a class, a resource method, an error class).
+- Changing a method's required parameters, or changing what an existing parameter means.
+- Changing a response's shape in a way that breaks a reasonable consumer (removing a field, changing a field's type) - adding a new field is not breaking.
+- Changing default behavior a consumer could reasonably have been relying on (e.g. which HTTP methods retry by default).
+
+Not breaking: internal refactors, dependency bumps, new resource methods, new optional parameters, README/example changes, adding a new error subclass (as long as it still extends `PredictFlowError`, existing `catch` blocks keep working).
+
+Every release gets a [CHANGELOG.md](CHANGELOG.md) entry - see existing entries for the format. If your PR is user-facing, mention what changed under `## [Unreleased]` (add that heading at the top of the file if it doesn't exist yet) rather than leaving the changelog for the maintainer to reconstruct from commit messages at release time.
+
 ## Review & merge
 
 PRs require a passing CI run and a code owner review before merging (see `.github/CODEOWNERS`) - `main` is protected, so nobody, including maintainers, merges without going through this. Don't take a merge delay personally; it's the same gate for everyone.

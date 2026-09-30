@@ -239,6 +239,10 @@ npm run typecheck
 
 ---
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, the PR process, and what a reviewer checks first.
